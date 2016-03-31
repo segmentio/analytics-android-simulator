@@ -6,5 +6,5 @@ Provides 2 components:
 1. App: The actual Android app that runs on a device.
 2. CLI: CLI app to trigger events.
 
-The app and cli communicate via web sockets. The cli accepts json as input, and
-sends it to the app which parses it and calls the analytics SDK.
+The CLI parses the input, converts them to intent extras and launches the sample app with the intent.
+The sample app reads the extras and makes the call.

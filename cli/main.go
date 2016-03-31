@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 
@@ -16,6 +17,7 @@ const (
 
 Usage:
   sim track <event> [--properties=<props>]
+  sim flush
   sim -h | --help
   sim --version
 
@@ -36,6 +38,12 @@ func main() {
 		track(arguments)
 		return
 	}
+	if arguments["flush"].(bool) {
+		flush()
+		return
+	}
+
+	log.Fatal("unknown command")
 }
 
 func track(arguments map[string]interface{}) {
@@ -52,9 +60,28 @@ func track(arguments map[string]interface{}) {
 		"properties": properties,
 	}).Info("simulating track call")
 
-	cmd := exec.Command("adb", "shell", "am", "start", "-n", "com.segment.analyticsandroidsimulator/com.segment.analyticsandroidsimulator.MainActivity")
+	var args []string
+	args = append(args, "-e", "type", "track")
+	args = append(args, "-e", "event", event)
+	for k, v := range properties {
+		args = append(args, "-e", "properties_"+k, fmt.Sprintf("%v", v))
+	}
+	runActivity(args)
+}
+
+func runActivity(cmdArgs []string) {
+	args := []string{"shell", "am", "start", "-n", "com.segment.analyticsandroidsimulator/com.segment.analyticsandroidsimulator.MainActivity"}
+
+	cmd := exec.Command("adb", append(args, cmdArgs...)...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.WithError(err).WithField("output", string(out)).Fatal("error running command")
 	}
+	log.Info(string(out))
+}
+
+func flush() {
+	log.Info("simulating flush call")
+	args := append([]string{}, "-e", "type", "track")
+	runActivity(args)
 }

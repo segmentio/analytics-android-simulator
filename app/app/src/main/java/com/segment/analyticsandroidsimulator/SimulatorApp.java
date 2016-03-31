@@ -8,6 +8,9 @@ public class SimulatorApp extends Application {
   @Override public void onCreate() {
     super.onCreate();
 
-    Analytics.setSingletonInstance(new Analytics.Builder(this, "4txshy8l73").build());
+    Analytics analytics = new Analytics.Builder(this, "4txshy8l73") //
+        .logLevel(Analytics.LogLevel.VERBOSE) //
+        .build();
+    Analytics.setSingletonInstance(analytics);
   }
 }

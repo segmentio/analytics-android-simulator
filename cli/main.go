@@ -75,7 +75,7 @@ func runActivity(cmdArgs []string) {
 	args := []string{"shell", "am", "start", "-n", "com.segment.analyticsandroidsimulator/com.segment.analyticsandroidsimulator.MainActivity"}
 
 	clearLogcat()
-	go readLogcat()
+	go tailLogcat()
 
 	adb := exec.Command("adb", append(args, cmdArgs...)...)
 	out, err := adb.CombinedOutput()
@@ -96,7 +96,7 @@ func clearLogcat() {
 	}
 }
 
-func readLogcat() {
+func tailLogcat() {
 	adb := exec.Command("adb", "logcat", "-s", "Analytics")
 
 	out, err := adb.StdoutPipe()

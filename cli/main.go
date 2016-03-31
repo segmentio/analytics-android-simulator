@@ -71,6 +71,12 @@ func track(arguments map[string]interface{}) {
 	runActivity(args)
 }
 
+func flush() {
+	log.Info("simulating flush call")
+	args := append([]string{}, "-e", "type", "track")
+	runActivity(args)
+}
+
 func runActivity(cmdArgs []string) {
 	args := []string{"shell", "am", "start", "-n", "com.segment.analyticsandroidsimulator/com.segment.analyticsandroidsimulator.MainActivity"}
 
@@ -118,10 +124,4 @@ func tailLogcat() {
 	if err != nil {
 		log.WithError(err).Fatal("error running adb logcat")
 	}
-}
-
-func flush() {
-	log.Info("simulating flush call")
-	args := append([]string{}, "-e", "type", "track")
-	runActivity(args)
 }

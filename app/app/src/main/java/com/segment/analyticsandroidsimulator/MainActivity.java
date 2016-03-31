@@ -31,19 +31,18 @@ public class MainActivity extends Activity {
       return;
     }
 
-    if ("track".equals(type)) {
-      Log.d("Simulator", "Track.");
-      track(intent);
-      return;
+    switch (type) {
+      case "track":
+        Log.d("Simulator", "Track.");
+        track(intent);
+        break;
+      case "flush":
+        Log.d("Simulator", "Flush.");
+        flush();
+        break;
+      default:
+        throw new IllegalArgumentException("invalid event type: " + type);
     }
-
-    if ("flush".equals(type)) {
-      Log.d("Simulator", "Flush.");
-      flush();
-      return;
-    }
-
-    throw new IllegalArgumentException("invalid event type: " + type);
   }
 
   void track(Intent intent) {

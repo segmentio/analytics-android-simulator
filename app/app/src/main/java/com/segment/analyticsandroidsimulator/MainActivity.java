@@ -3,28 +3,50 @@ package com.segment.analyticsandroidsimulator;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import com.segment.analytics.Analytics;
-
-import static com.segment.analyticsandroidsimulator.Utils.stringEqual;
 
 public class MainActivity extends Activity {
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_main);
 
-    Intent intent = getIntent();
-    String type = intent.getStringExtra("type");
-    if (stringEqual("track", type)) {
-      track();
-    } else if (stringEqual("flush", type)) {
-      flush();
-    } else {
-      throw new IllegalArgumentException("invalid event type: " + type);
-    }
+    setContentView(R.layout.activity_main);
+    handleIntent(getIntent());
   }
 
-  void track() {
-    Intent intent = getIntent();
+  @Override protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+
+    handleIntent(intent);
+  }
+
+  void handleIntent(Intent intent) {
+    if (intent == null) {
+      Log.d("Simulator", "No intent.");
+      return;
+    }
+    String type = intent.getStringExtra("type");
+    if (type == null) {
+      Log.d("Simulator", "No type.");
+      return;
+    }
+
+    if ("track".equals(type)) {
+      Log.d("Simulator", "Track.");
+      track(intent);
+      return;
+    }
+
+    if ("flush".equals(type)) {
+      Log.d("Simulator", "Flush.");
+      flush();
+      return;
+    }
+
+    throw new IllegalArgumentException("invalid event type: " + type);
+  }
+
+  void track(Intent intent) {
     String event = intent.getStringExtra("event");
     Analytics.with(this).track(event);
   }

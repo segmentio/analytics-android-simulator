@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/cli"
@@ -72,12 +74,50 @@ func track(arguments map[string]interface{}) {
 func runActivity(cmdArgs []string) {
 	args := []string{"shell", "am", "start", "-n", "com.segment.analyticsandroidsimulator/com.segment.analyticsandroidsimulator.MainActivity"}
 
-	cmd := exec.Command("adb", append(args, cmdArgs...)...)
-	out, err := cmd.CombinedOutput()
+	clearLogcat()
+	go readLogcat()
+
+	adb := exec.Command("adb", append(args, cmdArgs...)...)
+	out, err := adb.CombinedOutput()
 	if err != nil {
 		log.WithError(err).WithField("output", string(out)).Fatal("error running command")
 	}
 	log.Info(string(out))
+
+	time.Sleep(2 * time.Second)
+}
+
+func clearLogcat() {
+	// todo: fix, doesn't seem to be working.
+	adb := exec.Command("adb", "logcat", "-c")
+	out, err := adb.CombinedOutput()
+	if err != nil {
+		log.WithError(err).WithField("output", string(out)).Fatal("error clearing logcat")
+	}
+}
+
+func readLogcat() {
+	adb := exec.Command("adb", "logcat", "-s", "Analytics")
+
+	out, err := adb.StdoutPipe()
+	if err != nil {
+		log.WithError(err).Fatal("error reading adb logcat")
+	}
+
+	go func() {
+		scanner := bufio.NewScanner(out)
+		for scanner.Scan() {
+			log.Info(scanner.Text())
+		}
+		if err := scanner.Err(); err != nil {
+			fmt.Fprintln(os.Stderr, "reading standard input:", err)
+		}
+	}()
+
+	err = adb.Run()
+	if err != nil {
+		log.WithError(err).Fatal("error running adb logcat")
+	}
 }
 
 func flush() {

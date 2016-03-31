@@ -17,7 +17,7 @@ public class MainActivity extends Activity {
     if (stringEqual("track", type)) {
       track();
     } else if (stringEqual("flush", type)) {
-      track();
+      flush();
     } else {
       throw new IllegalArgumentException("invalid event type: " + type);
     }

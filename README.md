@@ -8,3 +8,9 @@ Provides 2 components:
 
 The CLI parses the input, converts them to intent extras and launches the sample app with the intent.
 The sample app reads the extras and makes the call.
+
+# Usage
+
+Start an emulator and install the app (easiest via Android Studio).
+
+`go run cli/main.go track foo --properties="{\"foo\": 23.1}"`

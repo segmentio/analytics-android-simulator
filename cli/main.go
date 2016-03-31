@@ -73,7 +73,7 @@ func track(arguments map[string]interface{}) {
 
 func flush() {
 	log.Info("simulating flush call")
-	args := append([]string{}, "-e", "type", "track")
+	args := append([]string{}, "-e", "type", "flush")
 	runActivity(args)
 }
 

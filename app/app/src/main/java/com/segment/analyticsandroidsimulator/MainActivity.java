@@ -3,8 +3,9 @@ package com.segment.analyticsandroidsimulator;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import com.segment.analytics.Analytics;
+import com.segment.analytics.Properties;
+import java.io.IOException;
 import timber.log.Timber;
 
 public class MainActivity extends Activity {
@@ -34,22 +35,37 @@ public class MainActivity extends Activity {
 
     switch (type) {
       case "track":
-        track(intent);
+        try {
+          track(intent);
+        } catch (IOException e) {
+          Timber.e(e, "Error running track.");
+        }
         break;
       case "flush":
         flush();
         break;
       default:
-        throw new IllegalArgumentException("invalid event type: " + type);
+        throw new IllegalArgumentException("Invalid event type: " + type);
     }
   }
 
-  void track(Intent intent) {
+  void track(Intent intent) throws IOException {
     String event = intent.getStringExtra("event");
-    Analytics.with(this).track(event);
+    Bundle extras = intent.getExtras();
+
+    Properties properties = new Properties();
+    for (String key : extras.keySet()) {
+      if (key.startsWith("properties_")) {
+        properties.put(key.replaceAll("properties_", ""), extras.get(key));
+      }
+    }
+
+    Timber.d("analytics.track(%s, %s);", event, properties);
+    Analytics.with(this).track(event, properties);
   }
 
   void flush() {
+    Timber.d("analytics.flush();");
     Analytics.with(this).flush();
   }
 }

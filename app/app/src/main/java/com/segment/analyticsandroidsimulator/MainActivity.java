@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import com.segment.analytics.Analytics;
+import timber.log.Timber;
 
 public class MainActivity extends Activity {
   @Override protected void onCreate(Bundle savedInstanceState) {
@@ -22,22 +23,20 @@ public class MainActivity extends Activity {
 
   void handleIntent(Intent intent) {
     if (intent == null) {
-      Log.d("Simulator", "No intent.");
+      Timber.d("Main activity launched with no intent.");
       return;
     }
     String type = intent.getStringExtra("type");
     if (type == null) {
-      Log.d("Simulator", "No type.");
+      Timber.d("No type provided in intent.");
       return;
     }
 
     switch (type) {
       case "track":
-        Log.d("Simulator", "Track.");
         track(intent);
         break;
       case "flush":
-        Log.d("Simulator", "Flush.");
         flush();
         break;
       default:

@@ -18,8 +18,14 @@ const (
 	usage   = `analytics-android-simulator.
 
 Usage:
-  sim track <event> [--properties=<props>]
+  sim track <event> [--properties=<p>]
+	sim screen [--category=<c>] [--name=<n>] [--properties=<p>]
+	sim identify [--userId=<id>] [--traits=<traits>]
+	sim alias <userId>
+	sim group <groupId> [--traits=<traits>]
   sim flush
+	sim reset
+
   sim -h | --help
   sim --version
 
@@ -40,8 +46,28 @@ func main() {
 		track(arguments)
 		return
 	}
+	if arguments["screen"].(bool) {
+		screen(arguments)
+		return
+	}
+	if arguments["identify"].(bool) {
+		identify(arguments)
+		return
+	}
+	if arguments["alias"].(bool) {
+		alias(arguments)
+		return
+	}
+	if arguments["group"].(bool) {
+		group(arguments)
+		return
+	}
 	if arguments["flush"].(bool) {
 		flush()
+		return
+	}
+	if arguments["reset"].(bool) {
+		reset()
 		return
 	}
 
@@ -50,9 +76,8 @@ func main() {
 
 func track(arguments map[string]interface{}) {
 	event := arguments["<event>"].(string)
-	props := arguments["--properties"].(string)
 	var properties map[string]interface{}
-	err := json.Unmarshal([]byte(props), &properties)
+	err := json.Unmarshal([]byte(arguments["--properties"].(string)), &properties)
 	if err != nil {
 		log.WithError(err).Fatal("invalid json")
 	}
@@ -71,9 +96,97 @@ func track(arguments map[string]interface{}) {
 	runActivity(args)
 }
 
+func screen(arguments map[string]interface{}) {
+	name := arguments["--name"].(string)
+	category := arguments["--category"].(string)
+	var properties map[string]interface{}
+	err := json.Unmarshal([]byte(arguments["--properties"].(string)), &properties)
+	if err != nil {
+		log.WithError(err).Fatal("invalid json")
+	}
+
+	log.WithFields(log.Fields{
+		"name":       name,
+		"category":   category,
+		"properties": properties,
+	}).Info("simulating screen call")
+
+	var args []string
+	args = append(args, "-e", "type", "screen")
+	args = append(args, "-e", "name", name)
+	args = append(args, "-e", "category", category)
+	for k, v := range properties {
+		args = append(args, "-e", "properties_"+k, fmt.Sprintf("%v", v))
+	}
+	runActivity(args)
+}
+
+func identify(arguments map[string]interface{}) {
+	userID := arguments["--userId"].(string)
+	var traits map[string]interface{}
+	err := json.Unmarshal([]byte(arguments["--traits"].(string)), &traits)
+	if err != nil {
+		log.WithError(err).Fatal("invalid json")
+	}
+
+	log.WithFields(log.Fields{
+		"userId": userID,
+		"traits": traits,
+	}).Info("simulating screen call")
+
+	var args []string
+	args = append(args, "-e", "type", "identify")
+	args = append(args, "-e", "userId", userID)
+	for k, v := range traits {
+		args = append(args, "-e", "traits_"+k, fmt.Sprintf("%v", v))
+	}
+	runActivity(args)
+}
+
+func alias(arguments map[string]interface{}) {
+	userID := arguments["<userId>"].(string)
+
+	log.WithFields(log.Fields{
+		"userId": userID,
+	}).Info("simulating alias call")
+
+	var args []string
+	args = append(args, "-e", "type", "alias")
+	args = append(args, "-e", "userId", userID)
+	runActivity(args)
+}
+
+func group(arguments map[string]interface{}) {
+	userID := arguments["<userId>"].(string)
+	var traits map[string]interface{}
+	err := json.Unmarshal([]byte(arguments["--traits"].(string)), &traits)
+	if err != nil {
+		log.WithError(err).Fatal("invalid json")
+	}
+
+	log.WithFields(log.Fields{
+		"userId": userID,
+		"traits": traits,
+	}).Info("simulating screen call")
+
+	var args []string
+	args = append(args, "-e", "type", "group")
+	args = append(args, "-e", "userId", userID)
+	for k, v := range traits {
+		args = append(args, "-e", "traits_"+k, fmt.Sprintf("%v", v))
+	}
+	runActivity(args)
+}
+
 func flush() {
 	log.Info("simulating flush call")
 	args := append([]string{}, "-e", "type", "flush")
+	runActivity(args)
+}
+
+func reset() {
+	log.Info("simulating reset call")
+	args := append([]string{}, "-e", "type", "reset")
 	runActivity(args)
 }
 

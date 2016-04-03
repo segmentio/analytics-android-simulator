@@ -14,3 +14,23 @@ The sample app reads the extras and makes the call.
 Start an emulator and install the app (easiest via Android Studio).
 
 `go run cli/main.go track foo --properties="{\"foo\": 23.1}"`
+
+```
+analytics-android-simulator.
+
+Usage:
+  sim track <event> [--properties=<p>]
+  sim screen [--category=<c>] [--name=<n>] [--properties=<p>]
+  sim identify [--userId=<id>] [--traits=<traits>]
+  sim alias <userId>
+  sim group <groupId> [--traits=<traits>]
+  sim flush
+  sim reset
+
+  sim -h | --help
+  sim --version
+
+Options:
+  -h --help             Show this screen.
+  --version             Show version.
+```

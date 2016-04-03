@@ -18,12 +18,12 @@ const (
 	usage   = `analytics-android-simulator.
 
 Usage:
-  sim track <event> [--properties=<p>]
+	sim track <event> [--properties=<p>]
 	sim screen [--category=<c>] [--name=<n>] [--properties=<p>]
 	sim identify [--userId=<id>] [--traits=<traits>]
 	sim alias <userId>
 	sim group <groupId> [--traits=<traits>]
-  sim flush
+	sim flush
 	sim reset
 
   sim -h | --help

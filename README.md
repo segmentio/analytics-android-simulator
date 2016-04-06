@@ -2,35 +2,61 @@
 
 App that lets you simulate sending arbitrary Segment events.
 
-Provides 2 components:
-1. App: The actual Android app that runs on a device.
-2. CLI: CLI app to trigger events.
+# One-Time Setup
 
-The CLI parses the input, converts them to intent extras and launches the sample app with the intent.
-The sample app reads the extras and makes the call.
+Clone the repo.
+
+One-Time: Run `docker build -t analytics-android-simulator .`
 
 # Usage
 
-Start an emulator and install the app (easiest via Android Studio).
+Everything runs inside the docker container, so you need to run all the simulator commands inside the container too (for now).
 
-`go run cli/main.go track foo --properties="{\"foo\": 23.1}"`
+`docker run -it analytics-android-simulator /bin/bash`
+
+Once you're in, just use the simulator CLI!
+
+# CLI Component
+
+`simulator track foo --properties="{\"foo\": 23.1}"`
 
 ```
 analytics-android-simulator.
 
 Usage:
-  sim track <event> [--properties=<p>]
-  sim screen [--category=<c>] [--name=<n>] [--properties=<p>]
-  sim identify [--userId=<id>] [--traits=<traits>]
-  sim alias <userId>
-  sim group <groupId> [--traits=<traits>]
-  sim flush
-  sim reset
+  simulator track <event> [--properties=<p>]
+  simulator screen [--category=<c>] [--name=<n>] [--properties=<p>]
+  simulator identify [--userId=<id>] [--traits=<traits>]
+  simulator alias <userId>
+  simulator group <groupId> [--traits=<traits>]
+  simulator flush
+  simulator reset
 
-  sim -h | --help
-  sim --version
+  simulator -h | --help
+  simulator --version
 
 Options:
   -h --help             Show this screen.
   --version             Show version.
 ```
+
+# Building
+
+1. `cd app && ./gradlew build`.
+
+2. Copy `app/app/build/outputs/apk/app-debug.apk` to `bin`.
+
+3. `go build -o bin/simulator ./...`.
+
+4. `docker build -t analytics-android-simulator .`
+
+# Structure
+
+Provides 2 components:
+
+1. App: The actual Android app that runs on a device.
+
+2. CLI: CLI app to trigger events.
+
+The CLI parses the input, converts them to intent extras and launches the sample app with the intent.
+The sample app reads the extras and makes the call.

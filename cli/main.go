@@ -87,9 +87,9 @@ func getOptionalString(m map[string]interface{}, k string) string {
 func runActivity(cmdArgs []string) {
 	args := []string{"shell", "am", "start", "-n", "com.segment.analytics.android.cli/com.segment.analytics.android.cli.MainActivity"}
 
-	clearLogcat()
 	go tailLogcat()
 
+	log.Infof("running %v", append(args, cmdArgs...))
 	adb := exec.Command("adb", append(args, cmdArgs...)...)
 	out, err := adb.CombinedOutput()
 	if err != nil {
@@ -99,20 +99,12 @@ func runActivity(cmdArgs []string) {
 
 	log.Info("waiting for command to run")
 	time.Sleep(10 * time.Second)
-}
-
-func clearLogcat() {
-	// todo: fix, doesn't seem to be working.
-	adb := exec.Command("adb", "logcat", "-c")
-	out, err := adb.CombinedOutput()
-	if err != nil {
-		log.WithError(err).WithField("output", string(out)).Fatal("error clearing logcat")
-	}
+	log.Info("waited for command to run")
 }
 
 func tailLogcat() {
-	adb := exec.Command("adb", "logcat", "-s", "Analytics")
-
+	log.Info("tailing logcat")
+	adb := exec.Command("adb", "logcat")
 	out, err := adb.StdoutPipe()
 	if err != nil {
 		log.WithError(err).Fatal("error reading adb logcat")

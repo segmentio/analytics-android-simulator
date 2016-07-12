@@ -58,12 +58,6 @@ public class MainActivity extends AppCompatActivity {
       case "group":
         group(intent);
         break;
-      case "flush":
-        flush();
-        break;
-      case "reset":
-        reset();
-        break;
       default:
         throw new IllegalArgumentException("Invalid event type: " + type);
     }
@@ -137,15 +131,5 @@ public class MainActivity extends AppCompatActivity {
 
     Timber.d("analytics.group(%s, %s);", groupId, traits);
     Analytics.with(this).group(groupId, traits, null);
-  }
-
-  void flush() {
-    Timber.d("analytics.flush();");
-    Analytics.with(this).flush();
-  }
-
-  void reset() {
-    Timber.d("analytics.reset();");
-    Analytics.with(this).reset();
   }
 }

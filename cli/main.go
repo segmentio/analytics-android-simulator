@@ -67,6 +67,24 @@ func track(arguments map[string]interface{}) {
 	runActivity(args)
 }
 
+func screen(arguments map[string]interface{}) {
+	name := arguments["<name>"].(string)
+	properties := getOptionalMap(arguments, "--properties")
+
+	log.WithFields(log.Fields{
+		"name":       name,
+		"properties": properties,
+	}).Info("simulating screen call")
+
+	var args []string
+	args = append(args, "-e", "type", "screen")
+	args = append(args, "-e", "name", name)
+	for k, v := range properties {
+		args = append(args, "-e", "properties_"+k, fmt.Sprintf("%v", v))
+	}
+	runActivity(args)
+}
+
 func getOptionalString(m map[string]interface{}, k string) string {
 	v := m[k]
 	if v == nil {

@@ -34,9 +34,8 @@ public class MainActivity extends AppCompatActivity {
       return;
     }
 
-    // TODO: writeKey as flag.
-    // https://segment.com/segment-engineering/sources/android-test/settings/keys
-    Analytics analytics = new Analytics.Builder(this, "5m6gbdgho6") //
+    String writeKey = intent.getStringExtra("writeKey");
+    Analytics analytics = new Analytics.Builder(this, writeKey) //
         .logLevel(Analytics.LogLevel.VERBOSE) //
         .flushQueueSize(1) //
         .build();

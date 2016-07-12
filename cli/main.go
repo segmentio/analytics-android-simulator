@@ -45,6 +45,10 @@ func main() {
 		track(arguments)
 		return
 	}
+	if arguments["screen"].(bool) {
+		screen(arguments)
+		return
+	}
 
 	log.Fatal("unknown command")
 }
@@ -58,13 +62,13 @@ func track(arguments map[string]interface{}) {
 		"properties": properties,
 	}).Info("simulating track call")
 
-	var args []string
-	args = append(args, "-e", "type", "track")
-	args = append(args, "-e", "event", event)
+	var extras []string
+	extras = append(extras, "-e", "type", "track")
+	extras = append(extras, "-e", "event", event)
 	for k, v := range properties {
-		args = append(args, "-e", "properties_"+k, fmt.Sprintf("%v", v))
+		extras = append(extras, "-e", "properties_"+k, fmt.Sprintf("%v", v))
 	}
-	runActivity(args)
+	runActivity(extras, arguments)
 }
 
 func screen(arguments map[string]interface{}) {
@@ -76,13 +80,13 @@ func screen(arguments map[string]interface{}) {
 		"properties": properties,
 	}).Info("simulating screen call")
 
-	var args []string
-	args = append(args, "-e", "type", "screen")
-	args = append(args, "-e", "name", name)
+	var extras []string
+	extras = append(extras, "-e", "type", "screen")
+	extras = append(extras, "-e", "name", name)
 	for k, v := range properties {
-		args = append(args, "-e", "properties_"+k, fmt.Sprintf("%v", v))
+		extras = append(extras, "-e", "properties_"+k, fmt.Sprintf("%v", v))
 	}
-	runActivity(args)
+	runActivity(extras, arguments)
 }
 
 func getOptionalString(m map[string]interface{}, k string) string {
@@ -106,13 +110,22 @@ func getOptionalMap(m map[string]interface{}, k string) map[string]interface{} {
 	return make(map[string]interface{}, 0)
 }
 
-func runActivity(cmdArgs []string) {
-	args := []string{"shell", "am", "start", "-n", "com.segment.analytics.android.cli/com.segment.analytics.android.cli.MainActivity"}
+func runActivity(adbExtras []string, inputArgs map[string]interface{}) {
+	adbArgs := []string{"shell", "am", "start", "-n", "com.segment.analytics.android.cli/com.segment.analytics.android.cli.MainActivity"}
 
 	go tailLogcat()
 
-	log.Infof("running %v", append(args, cmdArgs...))
-	adb := exec.Command("adb", append(args, cmdArgs...)...)
+	writeKey := getOptionalString(inputArgs, "--writeKey")
+	if writeKey == "" {
+		writeKey = os.Getenv("SEGMENT_WRITE_KEY")
+		if writeKey == "" {
+			log.Fatal("either $SEGMENT_WRITE_KEY or --writeKey must be provided")
+		}
+	}
+	adbExtras = append(adbExtras, "-e", "writeKey", writeKey)
+
+	log.Infof("running %v", append(adbArgs, adbExtras...))
+	adb := exec.Command("adb", append(adbArgs, adbExtras...)...)
 	out, err := adb.CombinedOutput()
 	if err != nil {
 		log.WithError(err).WithField("output", string(out)).Fatal("error running command")

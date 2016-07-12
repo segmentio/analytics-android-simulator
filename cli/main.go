@@ -15,29 +15,28 @@ import (
 
 const (
 	version = "0.1.0"
-	usage   = `analytics-android-simulator.
+	usage   = `Analytics Android CLI
 
 Usage:
-	sim track <event> [--properties=<p>]
-	sim screen [--category=<c>] [--name=<n>] [--properties=<p>]
-	sim identify [--userId=<id>] [--traits=<traits>]
-	sim alias <userId>
-	sim group <groupId> [--traits=<traits>]
-	sim flush
-	sim reset
-
-  sim -h | --help
-  sim --version
+  analytics track <event> [--properties=<properties>] [--context=<context>] [--writeKey=<writeKey>] [--userId=<userId>] [--anonymousId=<anonymousId>] [--integrations=<integrations>] [--timestamp=<timestamp>]
+  analytics screen <name> [--properties=<properties>] [--context=<context>] [--writeKey=<writeKey>] [--userId=<userId>] [--anonymousId=<anonymousId>] [--integrations=<integrations>] [--timestamp=<timestamp>]
+  analytics page <name> [--properties=<properties>] [--context=<context>] [--writeKey=<writeKey>] [--userId=<userId>] [--anonymousId=<anonymousId>] [--integrations=<integrations>] [--timestamp=<timestamp>]
+  analytics identify [--traits=<traits>] [--context=<context>] [--writeKey=<writeKey>] [--userId=<userId>] [--anonymousId=<anonymousId>] [--integrations=<integrations>] [--timestamp=<timestamp>]
+  analytics group --groupId=<groupId> [--traits=<traits>] [--properties=<properties>] [--context=<context>] [--writeKey=<writeKey>] [--userId=<userId>] [--anonymousId=<anonymousId>] [--integrations=<integrations>] [--timestamp=<timestamp>]
+  analytics alias --userId=<userId> --previousId=<previousId> [--traits=<traits>] [--properties=<properties>] [--context=<context>] [--writeKey=<writeKey>] [--anonymousId=<anonymousId>] [--integrations=<integrations>] [--timestamp=<timestamp>]
+  analytics -h | --help
+  analytics --version
 
 Options:
-  -h --help             Show this screen.
-  --version             Show version.`
+  -h --help     Show this screen.
+  --version     Show version.`
 )
 
 func main() {
 	log.SetHandler(cli.New(os.Stdout))
+	log.Infof("arguments: %q", os.Args)
 
-	arguments, err := docopt.Parse(usage, nil, true, version, false)
+	arguments, err := docopt.Parse(usage, nil, true, version, false, false)
 	if err != nil {
 		log.WithError(err).Fatal("invalid arguments")
 	}
@@ -46,40 +45,21 @@ func main() {
 		track(arguments)
 		return
 	}
-	if arguments["screen"].(bool) {
-		screen(arguments)
-		return
-	}
-	if arguments["identify"].(bool) {
-		identify(arguments)
-		return
-	}
-	if arguments["alias"].(bool) {
-		alias(arguments)
-		return
-	}
-	if arguments["group"].(bool) {
-		group(arguments)
-		return
-	}
-	if arguments["flush"].(bool) {
-		flush()
-		return
-	}
-	if arguments["reset"].(bool) {
-		reset()
-		return
-	}
 
 	log.Fatal("unknown command")
 }
 
 func track(arguments map[string]interface{}) {
 	event := arguments["<event>"].(string)
-	var properties map[string]interface{}
-	err := json.Unmarshal([]byte(arguments["--properties"].(string)), &properties)
-	if err != nil {
-		log.WithError(err).Fatal("invalid json")
+	properties := make(map[string]interface{}, 0)
+	rawProperties := getOptionalString(arguments, "--properties")
+	if rawProperties != "" {
+		var parsedProperties map[string]interface{}
+		err := json.Unmarshal([]byte(rawProperties), &parsedProperties)
+		if err != nil {
+			log.WithError(err).Fatal("error parsing properties")
+		}
+		properties = parsedProperties
 	}
 
 	log.WithFields(log.Fields{
@@ -96,98 +76,12 @@ func track(arguments map[string]interface{}) {
 	runActivity(args)
 }
 
-func screen(arguments map[string]interface{}) {
-	name := arguments["--name"].(string)
-	category := arguments["--category"].(string)
-	var properties map[string]interface{}
-	err := json.Unmarshal([]byte(arguments["--properties"].(string)), &properties)
-	if err != nil {
-		log.WithError(err).Fatal("invalid json")
+func getOptionalString(m map[string]interface{}, k string) string {
+	v := m[k]
+	if v == nil {
+		return ""
 	}
-
-	log.WithFields(log.Fields{
-		"name":       name,
-		"category":   category,
-		"properties": properties,
-	}).Info("simulating screen call")
-
-	var args []string
-	args = append(args, "-e", "type", "screen")
-	args = append(args, "-e", "name", name)
-	args = append(args, "-e", "category", category)
-	for k, v := range properties {
-		args = append(args, "-e", "properties_"+k, fmt.Sprintf("%v", v))
-	}
-	runActivity(args)
-}
-
-func identify(arguments map[string]interface{}) {
-	userID := arguments["--userId"].(string)
-	var traits map[string]interface{}
-	err := json.Unmarshal([]byte(arguments["--traits"].(string)), &traits)
-	if err != nil {
-		log.WithError(err).Fatal("invalid json")
-	}
-
-	log.WithFields(log.Fields{
-		"userId": userID,
-		"traits": traits,
-	}).Info("simulating screen call")
-
-	var args []string
-	args = append(args, "-e", "type", "identify")
-	args = append(args, "-e", "userId", userID)
-	for k, v := range traits {
-		args = append(args, "-e", "traits_"+k, fmt.Sprintf("%v", v))
-	}
-	runActivity(args)
-}
-
-func alias(arguments map[string]interface{}) {
-	userID := arguments["<userId>"].(string)
-
-	log.WithFields(log.Fields{
-		"userId": userID,
-	}).Info("simulating alias call")
-
-	var args []string
-	args = append(args, "-e", "type", "alias")
-	args = append(args, "-e", "userId", userID)
-	runActivity(args)
-}
-
-func group(arguments map[string]interface{}) {
-	userID := arguments["<userId>"].(string)
-	var traits map[string]interface{}
-	err := json.Unmarshal([]byte(arguments["--traits"].(string)), &traits)
-	if err != nil {
-		log.WithError(err).Fatal("invalid json")
-	}
-
-	log.WithFields(log.Fields{
-		"userId": userID,
-		"traits": traits,
-	}).Info("simulating screen call")
-
-	var args []string
-	args = append(args, "-e", "type", "group")
-	args = append(args, "-e", "userId", userID)
-	for k, v := range traits {
-		args = append(args, "-e", "traits_"+k, fmt.Sprintf("%v", v))
-	}
-	runActivity(args)
-}
-
-func flush() {
-	log.Info("simulating flush call")
-	args := append([]string{}, "-e", "type", "flush")
-	runActivity(args)
-}
-
-func reset() {
-	log.Info("simulating reset call")
-	args := append([]string{}, "-e", "type", "reset")
-	runActivity(args)
+	return v.(string)
 }
 
 func runActivity(cmdArgs []string) {

@@ -51,16 +51,7 @@ func main() {
 
 func track(arguments map[string]interface{}) {
 	event := arguments["<event>"].(string)
-	properties := make(map[string]interface{}, 0)
-	rawProperties := getOptionalString(arguments, "--properties")
-	if rawProperties != "" {
-		var parsedProperties map[string]interface{}
-		err := json.Unmarshal([]byte(rawProperties), &parsedProperties)
-		if err != nil {
-			log.WithError(err).Fatal("error parsing properties")
-		}
-		properties = parsedProperties
-	}
+	properties := getOptionalMap(arguments, "--properties")
 
 	log.WithFields(log.Fields{
 		"event":      event,
@@ -82,6 +73,19 @@ func getOptionalString(m map[string]interface{}, k string) string {
 		return ""
 	}
 	return v.(string)
+}
+
+func getOptionalMap(m map[string]interface{}, k string) map[string]interface{} {
+	rawMap := getOptionalString(m, k)
+	if rawMap != "" {
+		var parsedMap map[string]interface{}
+		err := json.Unmarshal([]byte(rawMap), &parsedMap)
+		if err != nil {
+			log.WithError(err).WithField("key", k).Fatal("error parsing map")
+		}
+		return parsedMap
+	}
+	return make(map[string]interface{}, 0)
 }
 
 func runActivity(cmdArgs []string) {

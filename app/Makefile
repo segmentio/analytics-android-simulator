@@ -1,2 +1,4 @@
 build:
-	./gradlew build
+	./gradlew assembleDebug
+
+.PHONY: build

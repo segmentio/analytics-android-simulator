@@ -1,14 +1,14 @@
-package com.segment.analyticsandroidsimulator;
+package com.segment.analytics.android.cli;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.Properties;
 import com.segment.analytics.Traits;
 import timber.log.Timber;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
@@ -23,6 +23,7 @@ public class MainActivity extends Activity {
   }
 
   void handleIntent(Intent intent) {
+    Timber.plant(new Timber.DebugTree());
     if (intent == null) {
       Timber.d("Main activity launched with no intent.");
       return;
@@ -32,6 +33,13 @@ public class MainActivity extends Activity {
       Timber.d("No type provided in intent.");
       return;
     }
+
+    // TODO: writeKey as flag.
+    // https://segment.com/segment-engineering/sources/android-test/settings/keys
+    Analytics analytics = new Analytics.Builder(this, "5m6gbdgho6") //
+        .logLevel(Analytics.LogLevel.VERBOSE) //
+        .build();
+    Analytics.setSingletonInstance(analytics);
 
     switch (type) {
       case "track":

@@ -101,9 +101,11 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 RUN apt-get install -y socat
 
 # Custom stuff.
-ADD emulator.sh /emulator.sh
+ADD start_emulator.sh /start_emulator.sh
+ADD wait_for_emulator.sh /wait_for_emulator.sh
 ADD run.sh /run.sh
 ADD cli/bin/cli_linux_amd64 /cli.sh
+ADD app/build/outputs/apk/app-debug.apk /app.apk
 
 ENTRYPOINT ["/run.sh"]
 CMD ["--help"]

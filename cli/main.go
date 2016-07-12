@@ -85,7 +85,7 @@ func getOptionalString(m map[string]interface{}, k string) string {
 }
 
 func runActivity(cmdArgs []string) {
-	args := []string{"shell", "am", "start", "-n", "com.segment.analyticsandroidsimulator/com.segment.analyticsandroidsimulator.MainActivity"}
+	args := []string{"shell", "am", "start", "-n", "com.segment.analytics.android.cli/com.segment.analytics.android.cli.MainActivity"}
 
 	clearLogcat()
 	go tailLogcat()

@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     // https://segment.com/segment-engineering/sources/android-test/settings/keys
     Analytics analytics = new Analytics.Builder(this, "5m6gbdgho6") //
         .logLevel(Analytics.LogLevel.VERBOSE) //
+        .flushQueueSize(1) //
         .build();
     Analytics.setSingletonInstance(analytics);
 
@@ -66,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
       default:
         throw new IllegalArgumentException("Invalid event type: " + type);
     }
+
+    Analytics.with(this).flush();
   }
 
   void track(Intent intent) {

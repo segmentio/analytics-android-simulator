@@ -97,7 +97,8 @@ func runActivity(cmdArgs []string) {
 	}
 	log.Info(string(out))
 
-	time.Sleep(2 * time.Second)
+	log.Info("waiting for command to run")
+	time.Sleep(10 * time.Second)
 }
 
 func clearLogcat() {

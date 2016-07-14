@@ -52,6 +52,10 @@ func main() {
 		identify(arguments)
 		return
 	}
+	if arguments["group"].(bool) {
+		group(arguments)
+		return
+	}
 
 	log.Fatal("unknown command")
 }
@@ -104,6 +108,24 @@ func identify(arguments map[string]interface{}) {
 	var extras []string
 	extras = append(extras, "-e", "type", "identify")
 	extras = append(extras, "-e", "userId", userId)
+	for k, v := range traits {
+		extras = append(extras, "-e", "traits_"+k, fmt.Sprintf("%v", v))
+	}
+	runActivity(extras, arguments)
+}
+
+func group(arguments map[string]interface{}) {
+	groupId := arguments["--groupId"].(string)
+	traits := getOptionalMap(arguments, "--traits")
+
+	log.WithFields(log.Fields{
+		"groupId": groupId,
+		"traits":  traits,
+	}).Info("simulating group call")
+
+	var extras []string
+	extras = append(extras, "-e", "type", "group")
+	extras = append(extras, "-e", "groupId", groupId)
 	for k, v := range traits {
 		extras = append(extras, "-e", "traits_"+k, fmt.Sprintf("%v", v))
 	}

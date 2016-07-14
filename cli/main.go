@@ -56,6 +56,10 @@ func main() {
 		group(arguments)
 		return
 	}
+	if arguments["alias"].(bool) {
+		alias(arguments)
+		return
+	}
 
 	log.Fatal("unknown command")
 }
@@ -129,6 +133,22 @@ func group(arguments map[string]interface{}) {
 	for k, v := range traits {
 		extras = append(extras, "-e", "traits_"+k, fmt.Sprintf("%v", v))
 	}
+	runActivity(extras, arguments)
+}
+
+func alias(arguments map[string]interface{}) {
+	userId := arguments["--userId"].(string)
+	previousId := arguments["--previousId"].(string)
+
+	log.WithFields(log.Fields{
+		"userId":     userId,
+		"previousId": previousId,
+	}).Info("simulating alias call")
+
+	var extras []string
+	extras = append(extras, "-e", "type", "alias")
+	extras = append(extras, "-e", "userId", userId)
+	extras = append(extras, "-e", "previousId", previousId)
 	runActivity(extras, arguments)
 }
 

@@ -20,7 +20,6 @@ const (
 Usage:
   analytics track <event> [--properties=<properties>] [--context=<context>] [--writeKey=<writeKey>] [--userId=<userId>] [--anonymousId=<anonymousId>] [--integrations=<integrations>] [--timestamp=<timestamp>]
   analytics screen <name> [--properties=<properties>] [--context=<context>] [--writeKey=<writeKey>] [--userId=<userId>] [--anonymousId=<anonymousId>] [--integrations=<integrations>] [--timestamp=<timestamp>]
-  analytics page <name> [--properties=<properties>] [--context=<context>] [--writeKey=<writeKey>] [--userId=<userId>] [--anonymousId=<anonymousId>] [--integrations=<integrations>] [--timestamp=<timestamp>]
   analytics identify [--traits=<traits>] [--context=<context>] [--writeKey=<writeKey>] [--userId=<userId>] [--anonymousId=<anonymousId>] [--integrations=<integrations>] [--timestamp=<timestamp>]
   analytics group --groupId=<groupId> [--traits=<traits>] [--properties=<properties>] [--context=<context>] [--writeKey=<writeKey>] [--userId=<userId>] [--anonymousId=<anonymousId>] [--integrations=<integrations>] [--timestamp=<timestamp>]
   analytics alias --userId=<userId> --previousId=<previousId> [--traits=<traits>] [--properties=<properties>] [--context=<context>] [--writeKey=<writeKey>] [--anonymousId=<anonymousId>] [--integrations=<integrations>] [--timestamp=<timestamp>]
@@ -47,6 +46,10 @@ func main() {
 	}
 	if arguments["screen"].(bool) {
 		screen(arguments)
+		return
+	}
+	if arguments["identify"].(bool) {
+		identify(arguments)
 		return
 	}
 
@@ -85,6 +88,24 @@ func screen(arguments map[string]interface{}) {
 	extras = append(extras, "-e", "name", name)
 	for k, v := range properties {
 		extras = append(extras, "-e", "properties_"+k, fmt.Sprintf("%v", v))
+	}
+	runActivity(extras, arguments)
+}
+
+func identify(arguments map[string]interface{}) {
+	userId := getOptionalString(arguments, "--userId")
+	traits := getOptionalMap(arguments, "--traits")
+
+	log.WithFields(log.Fields{
+		"userId": userId,
+		"traits": traits,
+	}).Info("simulating identify call")
+
+	var extras []string
+	extras = append(extras, "-e", "type", "identify")
+	extras = append(extras, "-e", "userId", userId)
+	for k, v := range traits {
+		extras = append(extras, "-e", "traits_"+k, fmt.Sprintf("%v", v))
 	}
 	runActivity(extras, arguments)
 }

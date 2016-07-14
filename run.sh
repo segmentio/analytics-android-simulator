@@ -10,4 +10,4 @@ sleep 5
 
 adb install app.apk
 
-./cli.sh $@
+./cli.sh "$@"
